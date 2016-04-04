@@ -136,4 +136,6 @@ availability = []
 for machine in machines:
     print('%s operational availability of %r.' % (machine.name, machine.uptime / (machine.downtime + machine.uptime)))
     availability.append(machine.uptime / (machine.downtime + machine.uptime))
+    
+# Overall operational availability assumes the machines are arranges in series in block diagram mode.
 print ('Overall operational availability of %r.') % np.product(availability)
