@@ -1,5 +1,9 @@
 ## Depot Model simulation
 # Runs in 15 minute slots
+# Requires that a timetable.csv and a injection.csv file 
+# Length 672 (1 week) is created for each. 
+# Injection must be TRUE or FALSE for each line. 
+# Timetable requirement is numeric.
 """
 This model is template that utilises simpy to simulate a depot.
 A depot has a series of facilities that can carry out maintenance activities.
@@ -38,7 +42,7 @@ maintenance_data_input = {'activity': ['service hour', 200, 60, 5, 'by train', 3
 							
 # Timetable
 timetable = np.loadtxt('timetable.csv', delimiter = ',', skiprows = 1).tolist()
-injection_window = np.loadtxt('shunting.csv', delimiter = ',', skiprows = 1, dtype = 'string').tolist()
+injection_window = np.loadtxt('injection.csv', delimiter = ',', skiprows = 1, dtype = 'string').tolist()
 #reception_window = np.load('reception_window.npy').tolist()
 
 
