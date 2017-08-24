@@ -96,7 +96,7 @@ weekend_peak = 80.0 # 2 days per week
 weekday_percentage_in_service = weekday_peak / fleet_size # percentage of fleet that gets in service during week days
 weekend_percentage_in_service = weekend_peak / fleet_size # percentage of fleet that gets in service during weekends
 service_day_rate = ((weekday_percentage_in_service * 5) + (weekend_percentage_in_service * 2)) / 7 # the MAGIC NUMBER which tells us the probability of a day being a service day
-service_hour_per_calendar_day = service_Day_rate * 17 
+service_hour_per_calendar_day = service_day_rate * 17 
 
 # weekday update
 def weekday(env):
@@ -208,9 +208,7 @@ class Train(object):
 	
 	# maintenance activity process				
 	def maintenance_activity(self, exam_name, fleet_name, service_interval, tolerance, exam_length, staff_requirement, depot, interval_type, maintenance_type, fleet_size):
-		if zero_tolerance == True:
-			tolerance = 0 # set to 0 to remove tolerance
-				
+			
 		fleet_name_number = "%s No. %d" % (self.fleet_name, self.train_number)
 		print "Fleet %s exam %s has exam length %d and occurs every %d service days (tolerance = %d)" % (fleet_name_number, exam_name, exam_length, service_interval, tolerance)
 		
@@ -373,7 +371,11 @@ class maintenance_request_object(Train):
 		tolerance_exceeded=self.tolerance_exceeded
 		start_time=(env.now/24/4-math.trunc(env.now/24/4))*24
 		
-	
+		yield self.env.timeout(exam_length)
+		end_time=(env.now/24/4-math.trunc(env.now/24/4))*24
+		end_of_maintenance=env.now
+		end_day=day
+		
 		trains_in_depot -= 1 # train has finished maintenance
 		
 		staff -= staff_requirement # staff have stopped working on job
@@ -473,7 +475,6 @@ print exam_reference
 env.process(update_timetable_requirement(env))
 env.process(peak_update(env))
 env.process(results_recorder(env))
-env.process(results_trains_available(env))
 env.process(weekday(env))
 
 # Generate trains
@@ -562,47 +563,6 @@ ax.legend(loc = 'center left', bbox_to_anchor = (1, 0.5))
 print '\nMorning peak statistics:'
 print df.groupby('PEAK').describe()
 
-#### HISTOGRAMS
-fig4 = plt.figure()
-ax1 = fig4.add_subplot(2,2,1)
-plt.hist(trains_maintained_per_week)
-plt.grid()
-plt.title('Distribution of Trains Maintained per Week')
-plt.xlabel('Trains Maintained per Week')
-plt.ylabel('Frequency')
-
-ax2 = fig4.add_subplot(2,2,2)
-max_staff = df['STAFF_IN_USE'].max()
-df['STAFF_IN_USE'].hist(ax = ax2, bins = max_staff)
-plt.title('Distribution of Staff Required for Maintenance')
-plt.xlabel('Number of Staff in Depot Actively Working on Jobs')
-plt.ylabel('Frequency')
-
-ax3 = fig4.add_subplot(2,2,3)
-df['TRAINS_IN_SERVICE'].hist(ax = ax3)
-
-plt.title('Distribution of Trains in Service')
-plt.xlabel('Number of Trains in Service')
-plt.ylabel('Frequency')
-
-ax4 = fig4.add_subplot(2,2,4)
-temp_df = maintainance_df.sum()/weeks
-temp_df.plot(kind = 'bar')
-plt.title('Weekly Completed Maintenance')
-plt.ylabel('Units per Week')
-
-fig5 = plt.figure()
-plt.hist(peak_available_trains)
-n = 0.0
-for number in peak_available_trains:
-	if number >= 114:
-		n += 1.0
-peak_availability_performance = (n / len(peak_available_trains))
-print peak_availability_performance
-print "Percentage of morning peaks met with 114 or more available trains: %r" % peak_availability_performance
-
-df.plot.scatter(x = 'TIMETABLE_REQUIREMENT', y = 'TRAINS_IN_SERVICE')
-
 print "\nTrain availability statistics..."
 shortfalls = []
 for spare in df['SPARE_TRAINS']:
@@ -618,12 +578,7 @@ print "The timetable was met %0.1f percent of the time." % x
 #for item in trains_maintained_per_week:
 #	thefile.write("%d\n" % item)
 
-if JNAT == False:
-	df.to_csv('simulation_output_nojnat.csv')
-elif JNAT == True:
-	df.to_csv('simulation_output_yesjnat.csv')
-else:
-	print 'ERROR WRITING DATA'
+df.to_csv('simulation_output.csv')
 
 #print df.std()
 
