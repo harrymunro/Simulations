@@ -36,7 +36,12 @@ import matplotlib.pyplot as plt #
 import seaborn as sns
 import math
 import time
-from Tkinter import *
+import sys
+if sys.version_info[0] == 3:
+    # brew install python-tk
+    from tkinter import *
+else:
+    from Tkinter import *
 
 # Analyse the overall headway
 def headway_analysis(time):
@@ -90,10 +95,10 @@ if show_animation == True:
     animation = Tk()
     #bitmap = BitmapImage(file="uxbridge.bmp")
 
-    im = PhotoImage(file="uxbridge_resized.gif")
+    #im = PhotoImage(file="uxbridge_resized.gif")
 
     canvas = Canvas(animation, width = 800, height = 400)
-    canvas.create_image(0,0, anchor=NW, image=im)
+    #canvas.create_image(0,0, anchor=NW, image=im)
     animation.title("Uxbridge Termini Simulation")
 
     canvas.pack()
@@ -114,10 +119,10 @@ if show_animation == True and hide_plots == False:
     a3.plot()
     a4.plot()
 
-    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg#, NavigationToolbar2TkAgg
     
     dataPlot = FigureCanvasTkAgg(f, master=animation)
-    dataPlot.show()
+    dataPlot.draw()
     dataPlot.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
     f.tight_layout()
 
@@ -177,10 +182,10 @@ def arrival_interval(T_INTER):
 def dwell():
 	# a few different options here - lognormal is normally most representative of human error and general dwell times
 	#t = random.randint(120, 240) # uniformly distributed
-        t = random.lognormvariate(math.log(dwelltime), 1) # lognormally distributed
+    t = random.lognormvariate(math.log(dwelltime), 1) # lognormally distributed
         #t = random.triangular(dwelltime * 0.9, dwelltime * 1.1, dwelltime) # triangular distribution (low, high, mid)
         #t = dwelltime # fixed dwell
-	return t
+    return t
 
 # define empty dictionary
 output_dict = {'Train ID':[], 'Time':[], 'Event Type': [], 'Event Description': []}
@@ -470,7 +475,7 @@ def train(env, name, tr):
     train_number.append(n)
 
     headway = headway_analysis(time)
-    print np.mean(headway)
+    print(np.mean(headway))
     moving_avg_headway.append(np.mean(headway))
     moving_stdev_headway.append(np.std(headway))
 
@@ -557,16 +562,22 @@ headway = headway_analysis(time)
 
 # define print descriptive statistics function
 def descriptive_stats(x, name):
-	print "\nDescriptive Statistics for %s" % name
-	print "count = %d" % len(x)
-	print "mean = %d" % np.mean(x)
-	print "std = %d" % np.std(x)
-	print "min = %d" % np.min(x)
-	print "25%% = %d" % np.percentile(x, 25)
-	print "50%% = %d" % np.percentile(x, 50)
-	print "75%% = %d" % np.percentile(x, 75)
-	print "max = %d" % np.max(x)
-        print "mean headway converts to %d TPH" % (3600.0/np.mean(x))
+    # Python 3 print statements
+    if sys.version_info[0] == 3:
+        print("\nDescriptive Statistics for %s" % name)
+        print("count = %d" % len(x))
+        print("mean = %d" % np.mean(x))
+        print("std = %d" % np.std(x))
+        print("min = %d" % np.min(x))
+        print("25%% = %d" % np.percentile(x, 25))
+        print("50%% = %d" % np.percentile(x, 50))
+        print("75%% = %d" % np.percentile(x, 75))
+        print("max = %d" % np.max(x))
+        print("mean headway converts to %d TPH" % (3600.0/np.mean(x)))
+
+    # Compatability for Python 2
+    else:
+        pass
 
 descriptive_stats(headway, "Output Headway") # run descriptive stats function
 
